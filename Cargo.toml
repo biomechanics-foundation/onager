@@ -1,0 +1,16 @@
+[package]
+name = "onager"
+version = "0.0.1"
+authors = ["Claire V. Hammond <me@cvhammond.com>", "Spencer T. Williams <stwilliamsmail@gmail.com>"]
+edition = "2021"
+categories = ["science", "simulation", "game-development", "science::robotics"]
+description = "Featherstone rigid-body physics library built in Rust"
+license = "MIT OR Apache-2.0"
+homepage = "https://chiron.rs"
+repository = "https://github.com/biomechanics-foundation/onager"
+readme = "README.md"
+keywords = ["physics", "robotics", "simulation", "featherstone", "rigid-body"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
