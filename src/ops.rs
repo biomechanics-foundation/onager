@@ -171,11 +171,23 @@ impl Shr<RotationMatrix> for ForceVec6 {
     }
 }
 
+impl ShrAssign<RotationMatrix> for ForceVec6 {
+    fn shr_assign(&mut self, rhs: RotationMatrix) {
+        *self = *self >> rhs.as_transform();
+    }
+}
+
 impl Shr<TranslationVector> for ForceVec6 {
     type Output = Self;
 
     fn shr(self, rhs: TranslationVector) -> Self::Output {
         self >> rhs.as_transform()
+    }
+}
+
+impl ShrAssign<TranslationVector> for ForceVec6 {
+    fn shr_assign(&mut self, rhs: TranslationVector) {
+        *self = *self >> rhs.as_transform();
     }
 }
 
@@ -206,6 +218,12 @@ impl Shr<TransformationMatrix> for ForceVec6 {
             self.data[3] * rhs.data[27] + self.data[4] * rhs.data[28] + self.data[5] * rhs.data[29],
             self.data[3] * rhs.data[33] + self.data[4] * rhs.data[34] + self.data[5] * rhs.data[35],
         ])
+    }
+}
+
+impl ShrAssign<TransformationMatrix> for ForceVec6 {
+    fn shr_assign(&mut self, rhs: TransformationMatrix) {
+        *self = *self >> rhs;
     }
 }
 
@@ -377,11 +395,23 @@ impl Shr<RotationMatrix> for MotionVec6 {
     }
 }
 
+impl ShrAssign<RotationMatrix> for MotionVec6 {
+    fn shr_assign(&mut self, rhs: RotationMatrix) {
+        *self = *self >> rhs.as_transform();
+    }
+}
+
 impl Shr<TranslationVector> for MotionVec6 {
     type Output = Self;
 
     fn shr(self, rhs: TranslationVector) -> Self::Output {
         self >> rhs.as_transform()
+    }
+}
+
+impl ShrAssign<TranslationVector> for MotionVec6 {
+    fn shr_assign(&mut self, rhs: TranslationVector) {
+        *self = *self >> rhs.as_transform();
     }
 }
 
@@ -412,6 +442,12 @@ impl Shr<TransformationMatrix> for MotionVec6 {
                 + self.data[4] * rhs.data[34]
                 + self.data[5] * rhs.data[35],
         ])
+    }
+}
+
+impl ShrAssign<TransformationMatrix> for MotionVec6 {
+    fn shr_assign(&mut self, rhs: TransformationMatrix) {
+        *self = *self >> rhs;
     }
 }
 
