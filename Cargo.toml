@@ -1,6 +1,6 @@
 [package]
 name = "onager"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Claire V. Hammond <me@cvhammond.com>", "Spencer T. Williams <stwilliamsmail@gmail.com>"]
 edition = "2021"
 categories = ["science", "simulation", "game-development", "science::robotics"]
