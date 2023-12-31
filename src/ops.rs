@@ -28,6 +28,71 @@ impl ForceVec6 {
             + self.data[4] * rhs.data[4]
             + self.data[5] * rhs.data[5]
     }
+
+    pub fn scale(&self, rhs: f64) -> Self {
+        ForceVec6::from_array([
+            self.data[0] * rhs,
+            self.data[1] * rhs,
+            self.data[2] * rhs,
+            self.data[3] * rhs,
+            self.data[4] * rhs,
+            self.data[5] * rhs,
+        ])
+    }
+
+    pub fn scale_mut(&mut self, rhs: f64) {
+        self.data[0] *= rhs;
+        self.data[1] *= rhs;
+        self.data[2] *= rhs;
+        self.data[3] *= rhs;
+        self.data[4] *= rhs;
+        self.data[5] *= rhs;
+    }
+
+    pub fn add_mut(&mut self, rhs: ForceVec6) {
+        self.data[0] += rhs.data[0];
+        self.data[1] += rhs.data[1];
+        self.data[2] += rhs.data[2];
+        self.data[3] += rhs.data[3];
+        self.data[4] += rhs.data[4];
+        self.data[5] += rhs.data[5];
+    }
+
+    pub fn sub_mut(&mut self, rhs: ForceVec6) {
+        self.data[0] -= rhs.data[0];
+        self.data[1] -= rhs.data[1];
+        self.data[2] -= rhs.data[2];
+        self.data[3] -= rhs.data[3];
+        self.data[4] -= rhs.data[4];
+        self.data[5] -= rhs.data[5];
+    }
+
+    // transform the force vector by a transformation matrix
+    pub fn transform(&self, rhs: TransformationMatrix) -> Self {
+        ForceVec6::from_array([
+            self.data[0] * rhs.data[0]
+                + self.data[1] * rhs.data[1]
+                + self.data[2] * rhs.data[2]
+                + self.data[3] * rhs.data[18]
+                + self.data[4] * rhs.data[19]
+                + self.data[5] * rhs.data[20],
+            self.data[0] * rhs.data[6]
+                + self.data[1] * rhs.data[7]
+                + self.data[2] * rhs.data[8]
+                + self.data[3] * rhs.data[24]
+                + self.data[4] * rhs.data[25]
+                + self.data[5] * rhs.data[26],
+            self.data[0] * rhs.data[12]
+                + self.data[1] * rhs.data[13]
+                + self.data[2] * rhs.data[14]
+                + self.data[3] * rhs.data[30]
+                + self.data[4] * rhs.data[31]
+                + self.data[5] * rhs.data[32],
+            self.data[3] * rhs.data[21] + self.data[4] * rhs.data[22] + self.data[5] * rhs.data[23],
+            self.data[3] * rhs.data[27] + self.data[4] * rhs.data[28] + self.data[5] * rhs.data[29],
+            self.data[3] * rhs.data[33] + self.data[4] * rhs.data[34] + self.data[5] * rhs.data[35],
+        ])
+    }
 }
 
 impl Default for ForceVec6 {
@@ -40,14 +105,7 @@ impl Mul<f64> for ForceVec6 {
     type Output = Self;
 
     fn mul(self, rhs: f64) -> Self::Output {
-        ForceVec6::from_array([
-            self.data[0] * rhs,
-            self.data[1] * rhs,
-            self.data[2] * rhs,
-            self.data[3] * rhs,
-            self.data[4] * rhs,
-            self.data[5] * rhs,
-        ])
+        self.scale(rhs)
     }
 }
 
@@ -61,12 +119,7 @@ impl Mul<MotionVec6> for ForceVec6 {
 
 impl MulAssign<f64> for ForceVec6 {
     fn mul_assign(&mut self, rhs: f64) {
-        self.data[0] *= rhs;
-        self.data[1] *= rhs;
-        self.data[2] *= rhs;
-        self.data[3] *= rhs;
-        self.data[4] *= rhs;
-        self.data[5] *= rhs;
+        self.scale_mut(rhs);
     }
 }
 
@@ -87,12 +140,7 @@ impl Add<ForceVec6> for ForceVec6 {
 
 impl AddAssign<ForceVec6> for ForceVec6 {
     fn add_assign(&mut self, rhs: ForceVec6) {
-        self.data[0] += rhs.data[0];
-        self.data[1] += rhs.data[1];
-        self.data[2] += rhs.data[2];
-        self.data[3] += rhs.data[3];
-        self.data[4] += rhs.data[4];
-        self.data[5] += rhs.data[5];
+        self.add_mut(rhs);
     }
 }
 
@@ -113,12 +161,7 @@ impl Sub<ForceVec6> for ForceVec6 {
 
 impl SubAssign<ForceVec6> for ForceVec6 {
     fn sub_assign(&mut self, rhs: ForceVec6) {
-        self.data[0] -= rhs.data[0];
-        self.data[1] -= rhs.data[1];
-        self.data[2] -= rhs.data[2];
-        self.data[3] -= rhs.data[3];
-        self.data[4] -= rhs.data[4];
-        self.data[5] -= rhs.data[5];
+        self.sub_mut(rhs);
     }
 }
 
@@ -195,29 +238,7 @@ impl Shr<TransformationMatrix> for ForceVec6 {
     type Output = Self;
 
     fn shr(self, rhs: TransformationMatrix) -> Self::Output {
-        ForceVec6::from_array([
-            self.data[0] * rhs.data[0]
-                + self.data[1] * rhs.data[1]
-                + self.data[2] * rhs.data[2]
-                + self.data[3] * rhs.data[18]
-                + self.data[4] * rhs.data[19]
-                + self.data[5] * rhs.data[20],
-            self.data[0] * rhs.data[6]
-                + self.data[1] * rhs.data[7]
-                + self.data[2] * rhs.data[8]
-                + self.data[3] * rhs.data[24]
-                + self.data[4] * rhs.data[25]
-                + self.data[5] * rhs.data[26],
-            self.data[0] * rhs.data[12]
-                + self.data[1] * rhs.data[13]
-                + self.data[2] * rhs.data[14]
-                + self.data[3] * rhs.data[30]
-                + self.data[4] * rhs.data[31]
-                + self.data[5] * rhs.data[32],
-            self.data[3] * rhs.data[21] + self.data[4] * rhs.data[22] + self.data[5] * rhs.data[23],
-            self.data[3] * rhs.data[27] + self.data[4] * rhs.data[28] + self.data[5] * rhs.data[29],
-            self.data[3] * rhs.data[33] + self.data[4] * rhs.data[34] + self.data[5] * rhs.data[35],
-        ])
+        self.transform(rhs)
     }
 }
 
@@ -252,6 +273,52 @@ impl MotionVec6 {
             + self.data[4] * rhs.data[4]
             + self.data[5] * rhs.data[5]
     }
+
+    pub fn scale(&self, rhs: f64) -> Self {
+        MotionVec6::from_array([
+            self.data[0] * rhs,
+            self.data[1] * rhs,
+            self.data[2] * rhs,
+            self.data[3] * rhs,
+            self.data[4] * rhs,
+            self.data[5] * rhs,
+        ])
+    }
+
+    pub fn scale_mut(&mut self, rhs: f64) {
+        self.data[0] *= rhs;
+        self.data[1] *= rhs;
+        self.data[2] *= rhs;
+        self.data[3] *= rhs;
+        self.data[4] *= rhs;
+        self.data[5] *= rhs;
+    }
+
+    pub fn transform(&self, rhs: TransformationMatrix) -> Self {
+        MotionVec6::from_array([
+            self.data[0] * rhs.data[0] + self.data[1] * rhs.data[1] + self.data[2] * rhs.data[2],
+            self.data[0] * rhs.data[6] + self.data[1] * rhs.data[7] + self.data[2] * rhs.data[8],
+            self.data[0] * rhs.data[12] + self.data[1] * rhs.data[13] + self.data[2] * rhs.data[14],
+            self.data[0] * rhs.data[18]
+                + self.data[1] * rhs.data[19]
+                + self.data[2] * rhs.data[20]
+                + self.data[3] * rhs.data[21]
+                + self.data[4] * rhs.data[22]
+                + self.data[5] * rhs.data[23],
+            self.data[0] * rhs.data[24]
+                + self.data[1] * rhs.data[25]
+                + self.data[2] * rhs.data[26]
+                + self.data[3] * rhs.data[27]
+                + self.data[4] * rhs.data[28]
+                + self.data[5] * rhs.data[29],
+            self.data[0] * rhs.data[30]
+                + self.data[1] * rhs.data[31]
+                + self.data[2] * rhs.data[32]
+                + self.data[3] * rhs.data[33]
+                + self.data[4] * rhs.data[34]
+                + self.data[5] * rhs.data[35],
+        ])
+    }
 }
 
 impl Default for MotionVec6 {
@@ -264,14 +331,7 @@ impl Mul<f64> for MotionVec6 {
     type Output = Self;
 
     fn mul(self, rhs: f64) -> Self::Output {
-        MotionVec6::from_array([
-            self.data[0] * rhs,
-            self.data[1] * rhs,
-            self.data[2] * rhs,
-            self.data[3] * rhs,
-            self.data[4] * rhs,
-            self.data[5] * rhs,
-        ])
+        self.scale(rhs)
     }
 }
 
@@ -285,12 +345,7 @@ impl Mul<ForceVec6> for MotionVec6 {
 
 impl MulAssign<f64> for MotionVec6 {
     fn mul_assign(&mut self, rhs: f64) {
-        self.data[0] *= rhs;
-        self.data[1] *= rhs;
-        self.data[2] *= rhs;
-        self.data[3] *= rhs;
-        self.data[4] *= rhs;
-        self.data[5] *= rhs;
+        self.scale_mut(rhs);
     }
 }
 
@@ -419,29 +474,7 @@ impl Shr<TransformationMatrix> for MotionVec6 {
     type Output = Self;
 
     fn shr(self, rhs: TransformationMatrix) -> Self::Output {
-        MotionVec6::from_array([
-            self.data[0] * rhs.data[0] + self.data[1] * rhs.data[1] + self.data[2] * rhs.data[2],
-            self.data[0] * rhs.data[6] + self.data[1] * rhs.data[7] + self.data[2] * rhs.data[8],
-            self.data[0] * rhs.data[12] + self.data[1] * rhs.data[13] + self.data[2] * rhs.data[14],
-            self.data[0] * rhs.data[18]
-                + self.data[1] * rhs.data[19]
-                + self.data[2] * rhs.data[20]
-                + self.data[3] * rhs.data[21]
-                + self.data[4] * rhs.data[22]
-                + self.data[5] * rhs.data[23],
-            self.data[0] * rhs.data[24]
-                + self.data[1] * rhs.data[25]
-                + self.data[2] * rhs.data[26]
-                + self.data[3] * rhs.data[27]
-                + self.data[4] * rhs.data[28]
-                + self.data[5] * rhs.data[29],
-            self.data[0] * rhs.data[30]
-                + self.data[1] * rhs.data[31]
-                + self.data[2] * rhs.data[32]
-                + self.data[3] * rhs.data[33]
-                + self.data[4] * rhs.data[34]
-                + self.data[5] * rhs.data[35],
-        ])
+        self.transform(rhs)
     }
 }
 
@@ -482,8 +515,20 @@ impl TransformationMatrix {
         }
     }
 
-    pub fn as_transform(&self) -> Self {
-        Self { data: self.data }
+    pub fn multiply(&self, rhs: TransformationMatrix) -> Self {
+        let mut data = [0.0; 36];
+        for i in 0..6 {
+            for j in 0..6 {
+                for k in 0..6 {
+                    data[i * 6 + j] += self.data[i * 6 + k] * rhs.data[k * 6 + j];
+                }
+            }
+        }
+        Self { data }
+    }
+
+    pub fn inverse_transform(&self) -> Self {
+        !self.to_rotation() + !self.to_translation()
     }
 }
 
@@ -497,15 +542,7 @@ impl Mul<TransformationMatrix> for TransformationMatrix {
     type Output = Self;
 
     fn mul(self, rhs: TransformationMatrix) -> Self::Output {
-        let mut data = [0.0; 36];
-        for i in 0..6 {
-            for j in 0..6 {
-                for k in 0..6 {
-                    data[i * 6 + j] += self.data[i * 6 + k] * rhs.data[k * 6 + j];
-                }
-            }
-        }
-        Self { data }
+        self.multiply(rhs)
     }
 }
 
@@ -514,7 +551,7 @@ impl Not for TransformationMatrix {
     type Output = Self;
 
     fn not(self) -> Self::Output {
-        !self.to_rotation() + !self.to_translation()
+        self.inverse_transform()
     }
 }
 
@@ -569,18 +606,8 @@ impl RotationMatrix {
             ],
         }
     }
-}
 
-impl Default for RotationMatrix {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl Mul<RotationMatrix> for RotationMatrix {
-    type Output = Self;
-
-    fn mul(self, rhs: RotationMatrix) -> Self::Output {
+    pub fn multiply(&self, rhs: RotationMatrix) -> Self {
         RotationMatrix::from_array([
             self.data[0] * rhs.data[0] + self.data[1] * rhs.data[3] + self.data[2] * rhs.data[6],
             self.data[0] * rhs.data[1] + self.data[1] * rhs.data[4] + self.data[2] * rhs.data[7],
@@ -593,12 +620,8 @@ impl Mul<RotationMatrix> for RotationMatrix {
             self.data[6] * rhs.data[2] + self.data[7] * rhs.data[5] + self.data[8] * rhs.data[8],
         ])
     }
-}
 
-impl Not for RotationMatrix {
-    type Output = Self;
-
-    fn not(self) -> Self::Output {
+    pub fn transpose(&self) -> Self {
         RotationMatrix::from_array([
             self.data[0],
             self.data[3],
@@ -610,6 +633,28 @@ impl Not for RotationMatrix {
             self.data[5],
             self.data[8],
         ])
+    }
+}
+
+impl Default for RotationMatrix {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Mul<RotationMatrix> for RotationMatrix {
+    type Output = Self;
+
+    fn mul(self, rhs: RotationMatrix) -> Self::Output {
+        self.multiply(rhs)
+    }
+}
+
+impl Not for RotationMatrix {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        self.transpose()
     }
 }
 
