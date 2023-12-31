@@ -1,5 +1,3 @@
-#![no_std]
-
 pub mod ops;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -26,6 +24,13 @@ pub struct RotationMatrix {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct TranslationVector {
     data: [f64; 3],
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Basis {
+    X,
+    Y,
+    Z,
 }
 
 
@@ -61,8 +66,8 @@ pub struct TranslationVector {
 //
 //my_force.cross(my_motion.dot(my_force));
 //
-//new_force_vec = my_force * my_motion;
-//new_motion_vec = my_motion * (my_force | my_motion);
+//new_force_vec = my_motion % my_force;
+//new_motion_vec = my_force % my_motion;
 //
 //force_vec *= motion_vec;
 //counter += 1;

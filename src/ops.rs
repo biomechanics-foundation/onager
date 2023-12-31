@@ -1,6 +1,9 @@
-use crate::{ForceVec6, MotionVec6, RotationMatrix, TransformationMatrix, TranslationVector};
+use crate::{
+    Basis, ForceVec6, MotionVec6, RotationMatrix, TransformationMatrix, TranslationVector,
+};
 use core::ops::{
-    Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Not, Shr, ShrAssign, Sub, SubAssign,
+    Add, AddAssign, BitXor, BitXorAssign, Div, DivAssign, Mul, MulAssign, Neg, Not, Shr, ShrAssign,
+    Sub, SubAssign,
 };
 
 impl ForceVec6 {
@@ -91,6 +94,34 @@ impl ForceVec6 {
             self.data[3] * rhs.data[21] + self.data[4] * rhs.data[22] + self.data[5] * rhs.data[23],
             self.data[3] * rhs.data[27] + self.data[4] * rhs.data[28] + self.data[5] * rhs.data[29],
             self.data[3] * rhs.data[33] + self.data[4] * rhs.data[34] + self.data[5] * rhs.data[35],
+        ])
+    }
+
+    pub fn cross_force(&self, rhs: ForceVec6) -> ForceVec6 {
+        ForceVec6::from_array([
+            self.data[1] * rhs.data[2] - self.data[2] * rhs.data[1] + self.data[4] * rhs.data[5]
+                - self.data[5] * rhs.data[4],
+            self.data[2] * rhs.data[0] - self.data[0] * rhs.data[2] + self.data[5] * rhs.data[3]
+                - self.data[3] * rhs.data[5],
+            self.data[0] * rhs.data[1] - self.data[1] * rhs.data[0] + self.data[3] * rhs.data[4]
+                - self.data[4] * rhs.data[3],
+            self.data[1] * rhs.data[5] - self.data[2] * rhs.data[4],
+            self.data[2] * rhs.data[3] - self.data[0] * rhs.data[5],
+            self.data[0] * rhs.data[4] - self.data[1] * rhs.data[3],
+        ])
+    }
+
+    pub fn cross_motion(&self, rhs: MotionVec6) -> MotionVec6 {
+        MotionVec6::from_array([
+            self.data[1] * rhs.data[2] - self.data[2] * rhs.data[1],
+            self.data[2] * rhs.data[0] - self.data[0] * rhs.data[2],
+            self.data[0] * rhs.data[1] - self.data[1] * rhs.data[0],
+            self.data[1] * rhs.data[5] - self.data[2] * rhs.data[4] + self.data[4] * rhs.data[2]
+                - self.data[5] * rhs.data[1],
+            self.data[2] * rhs.data[3] - self.data[0] * rhs.data[5] + self.data[5] * rhs.data[0]
+                - self.data[3] * rhs.data[2],
+            self.data[0] * rhs.data[4] - self.data[1] * rhs.data[3] + self.data[3] * rhs.data[1]
+                - self.data[4] * rhs.data[0],
         ])
     }
 }
@@ -248,6 +279,28 @@ impl ShrAssign<TransformationMatrix> for ForceVec6 {
     }
 }
 
+impl BitXor<ForceVec6> for ForceVec6 {
+    type Output = ForceVec6;
+
+    fn bitxor(self, rhs: ForceVec6) -> Self::Output {
+        self.cross_force(rhs)
+    }
+}
+
+impl BitXor<MotionVec6> for ForceVec6 {
+    type Output = MotionVec6;
+
+    fn bitxor(self, rhs: MotionVec6) -> Self::Output {
+        self.cross_motion(rhs)
+    }
+}
+
+impl BitXorAssign<ForceVec6> for ForceVec6 {
+    fn bitxor_assign(&mut self, rhs: ForceVec6) {
+        *self = *self ^ rhs;
+    }
+}
+
 impl MotionVec6 {
     pub fn new() -> Self {
         Self { data: [0.0; 6] }
@@ -317,6 +370,34 @@ impl MotionVec6 {
                 + self.data[3] * rhs.data[33]
                 + self.data[4] * rhs.data[34]
                 + self.data[5] * rhs.data[35],
+        ])
+    }
+
+    pub fn cross_force(&self, rhs: ForceVec6) -> ForceVec6 {
+        ForceVec6::from_array([
+            self.data[1] * rhs.data[2] - self.data[2] * rhs.data[1] + self.data[4] * rhs.data[5]
+                - self.data[5] * rhs.data[4],
+            self.data[2] * rhs.data[0] - self.data[0] * rhs.data[2] + self.data[5] * rhs.data[3]
+                - self.data[3] * rhs.data[5],
+            self.data[0] * rhs.data[1] - self.data[1] * rhs.data[0] + self.data[3] * rhs.data[4]
+                - self.data[4] * rhs.data[3],
+            self.data[1] * rhs.data[5] - self.data[2] * rhs.data[4],
+            self.data[2] * rhs.data[3] - self.data[0] * rhs.data[5],
+            self.data[0] * rhs.data[4] - self.data[1] * rhs.data[3],
+        ])
+    }
+
+    pub fn cross_motion(&self, rhs: MotionVec6) -> MotionVec6 {
+        MotionVec6::from_array([
+            self.data[1] * rhs.data[2] - self.data[2] * rhs.data[1],
+            self.data[2] * rhs.data[0] - self.data[0] * rhs.data[2],
+            self.data[0] * rhs.data[1] - self.data[1] * rhs.data[0],
+            self.data[1] * rhs.data[5] - self.data[2] * rhs.data[4] + self.data[4] * rhs.data[2]
+                - self.data[5] * rhs.data[1],
+            self.data[2] * rhs.data[3] - self.data[0] * rhs.data[5] + self.data[5] * rhs.data[0]
+                - self.data[3] * rhs.data[2],
+            self.data[0] * rhs.data[4] - self.data[1] * rhs.data[3] + self.data[3] * rhs.data[1]
+                - self.data[4] * rhs.data[0],
         ])
     }
 }
@@ -484,6 +565,28 @@ impl ShrAssign<TransformationMatrix> for MotionVec6 {
     }
 }
 
+impl BitXor<ForceVec6> for MotionVec6 {
+    type Output = ForceVec6;
+
+    fn bitxor(self, rhs: ForceVec6) -> Self::Output {
+        self.cross_force(rhs)
+    }
+}
+
+impl BitXor<MotionVec6> for MotionVec6 {
+    type Output = MotionVec6;
+
+    fn bitxor(self, rhs: MotionVec6) -> Self::Output {
+        self.cross_motion(rhs)
+    }
+}
+
+impl BitXorAssign<MotionVec6> for MotionVec6 {
+    fn bitxor_assign(&mut self, rhs: MotionVec6) {
+        *self = *self ^ rhs;
+    }
+}
+
 impl TransformationMatrix {
     pub fn new() -> Self {
         Self { data: [0.0; 36] }
@@ -562,6 +665,56 @@ impl RotationMatrix {
 
     pub fn from_array(data: [f64; 9]) -> Self {
         Self { data }
+    }
+
+    pub fn from_angle(axis: Basis, angle: f64) -> Self {
+        match axis {
+            Basis::X => Self::from_array([
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                angle.cos(),
+                angle.sin(),
+                0.0,
+                -angle.sin(),
+                angle.cos(),
+            ]),
+            Basis::Y => Self::from_array([
+                angle.cos(),
+                0.0,
+                -angle.sin(),
+                0.0,
+                1.0,
+                0.0,
+                angle.sin(),
+                0.0,
+                angle.cos(),
+            ]),
+            Basis::Z => Self::from_array([
+                angle.cos(),
+                angle.sin(),
+                0.0,
+                -angle.sin(),
+                angle.cos(),
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+            ]),
+        }
+    }
+
+    pub fn from_x_rotation(angle: f64) -> Self {
+        RotationMatrix::from_angle(Basis::X, angle)
+    }
+
+    pub fn from_y_rotation(angle: f64) -> Self {
+        RotationMatrix::from_angle(Basis::Y, angle)
+    }
+
+    pub fn from_z_rotation(angle: f64) -> Self {
+        RotationMatrix::from_angle(Basis::Z, angle)
     }
 
     pub fn as_transform(&self) -> TransformationMatrix {
