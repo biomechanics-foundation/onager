@@ -1,5 +1,5 @@
 use crate::{
-    Basis, ForceVec6, MotionVec6, RotationMatrix, TransformationMatrix, TranslationVector,
+    Basis, ForceVec6, Inertia, MotionVec6, RotationMatrix, TransformationMatrix, TranslationVector, InverseInertia,
 };
 use core::ops::{
     Add, AddAssign, BitXor, BitXorAssign, Div, DivAssign, Mul, MulAssign, Neg, Not, Shr, ShrAssign,
@@ -931,5 +931,70 @@ impl Add<RotationMatrix> for TranslationVector {
 
     fn add(self, rhs: RotationMatrix) -> Self::Output {
         self.as_transform() * rhs.as_transform()
+    }
+}
+
+impl Inertia {
+    pub fn new(
+        mass: f64,
+        i_xx: f64,
+        i_yy: f64,
+        i_zz: f64,
+        i_xy: f64,
+        i_xz: f64,
+        i_yz: f64,
+    ) -> Self {
+        Self {
+            mass,
+            i_xx,
+            i_yy,
+            i_zz,
+            i_xy,
+            i_xz,
+            i_yz,
+        }
+    }
+
+    pub fn motion_multiply(
+        &self,
+        motion: MotionVec6,
+        center_of_mass: TranslationVector,
+    ) -> ForceVec6 {
+        ForceVec6::from_array([
+            self.i_xx * motion.data[0] + self.i_xy * motion.data[1] + self.i_xz * motion.data[2],
+            self.i_xy * motion.data[0] + self.i_yy * motion.data[1] + self.i_yz * motion.data[2],
+            self.i_xz * motion.data[0] + self.i_yz * motion.data[1] + self.i_zz * motion.data[2],
+            self.mass
+                * (motion.data[4] * -center_of_mass.data[2]
+                    + motion.data[5] * center_of_mass.data[1]),
+            self.mass
+                * (motion.data[3] * center_of_mass.data[2]
+                    + motion.data[5] * -center_of_mass.data[0]),
+            self.mass
+                * (motion.data[3] * -center_of_mass.data[1]
+                    + motion.data[4] * center_of_mass.data[0]),
+        ])
+    }
+}
+
+impl InverseInertia {
+    pub fn new(
+        mass: f64,
+        i_xx: f64,
+        i_yy: f64,
+        i_zz: f64,
+        i_xy: f64,
+        i_xz: f64,
+        i_yz: f64,
+    ) -> Self {
+        Self {
+            mass,
+            i_xx,
+            i_yy,
+            i_zz,
+            i_xy,
+            i_xz,
+            i_yz,
+        }
     }
 }

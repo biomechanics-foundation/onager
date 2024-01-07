@@ -33,6 +33,36 @@ pub enum Basis {
     Z,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Inertia {
+    pub mass: f64,
+    pub i_xx: f64,
+    pub i_yy: f64,
+    pub i_zz: f64,
+    pub i_xy: f64,
+    pub i_xz: f64,
+    pub i_yz: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct InverseInertia {
+    pub mass: f64,
+    pub i_xx: f64,
+    pub i_yy: f64,
+    pub i_zz: f64,
+    pub i_xy: f64,
+    pub i_xz: f64,
+    pub i_yz: f64,
+}
+
+//Body("pedal", Vec3(0.0, 0.0, 0.0), Vec3(0.0, 0.0, 0.0), 1.0, 1.0, 1.0, 1.0, 1.0);
+//let inertia = Inertia(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0);
+//
+//Body("pedal", model.body(1), Vec3(0.0), inertia.clone().i_xx(5.0));
+//
+//Inertia::new(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0);
+//Inertia::new([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]);
+//Inertia::new(my_array);
 
 //new_motion = my_motion.rotate(RotMat3);
 //
