@@ -1,5 +1,6 @@
 use crate::{
-    Basis, ForceVec6, Inertia, MotionVec6, RotationMatrix, TransformationMatrix, TranslationVector, InverseInertia,
+    Basis, ForceVec6, Inertia, InverseInertia, MotionVec6, RotationMatrix, TransformationMatrix,
+    TranslationVector,
 };
 use core::ops::{
     Add, AddAssign, BitXor, BitXorAssign, Div, DivAssign, Mul, MulAssign, Neg, Not, Shr, ShrAssign,
@@ -978,6 +979,7 @@ impl Inertia {
 }
 
 impl InverseInertia {
+    //TODO: use num_traits or similar to prevent mass from being 0
     pub fn new(
         mass: f64,
         i_xx: f64,
@@ -996,5 +998,85 @@ impl InverseInertia {
             i_xz,
             i_yz,
         }
+    }
+
+    pub fn force_multiply(
+        &self,
+        force: ForceVec6,
+        center_of_mass: TranslationVector,
+    ) -> MotionVec6 {
+        let cx_i = [
+            -center_of_mass.data[2] * self.i_xy + center_of_mass.data[1] * self.i_xz,
+            -center_of_mass.data[2] * self.i_yy + center_of_mass.data[1] * self.i_yz,
+            -center_of_mass.data[2] * self.i_yz + center_of_mass.data[1] * self.i_zz,
+            center_of_mass.data[2] * self.i_xx - center_of_mass.data[0] * self.i_xz,
+            center_of_mass.data[2] * self.i_xy - center_of_mass.data[0] * self.i_yz,
+            center_of_mass.data[2] * self.i_xz - center_of_mass.data[0] * self.i_zz,
+            -center_of_mass.data[1] * self.i_xx + center_of_mass.data[0] * self.i_xy,
+            -center_of_mass.data[1] * self.i_xy + center_of_mass.data[0] * self.i_yy,
+            -center_of_mass.data[1] * self.i_xz + center_of_mass.data[0] * self.i_yz,
+        ];
+        MotionVec6::from_array([
+            self.i_xx * force.data[0]
+                + self.i_xy * force.data[1]
+                + self.i_xz * force.data[2]
+                + (-self.i_xy * center_of_mass.data[2] + self.i_xz * center_of_mass.data[1])
+                    * force.data[3]
+                + (self.i_xx * center_of_mass.data[2] - self.i_xz * center_of_mass.data[0])
+                    * force.data[4]
+                + (-self.i_xx * center_of_mass.data[1] + self.i_xy * center_of_mass.data[0])
+                    * force.data[5],
+            self.i_xy * force.data[0]
+                + self.i_yy * force.data[1]
+                + self.i_yz * force.data[2]
+                + (-self.i_yy * center_of_mass.data[2] + self.i_yz * center_of_mass.data[1])
+                    * force.data[3]
+                + (self.i_xy * center_of_mass.data[2] - self.i_yz * center_of_mass.data[0])
+                    * force.data[4]
+                + (-self.i_xy * center_of_mass.data[1] + self.i_yy * center_of_mass.data[0])
+                    * force.data[5],
+            self.i_xz * force.data[0]
+                + self.i_yz * force.data[1]
+                + self.i_zz * force.data[2]
+                + (-self.i_yz * center_of_mass.data[2] + self.i_zz * center_of_mass.data[1])
+                    * force.data[3]
+                + (self.i_xz * center_of_mass.data[2] - self.i_zz * center_of_mass.data[0])
+                    * force.data[4]
+                + (-self.i_xz * center_of_mass.data[1] + self.i_yz * center_of_mass.data[0])
+                    * force.data[5],
+            cx_i[0] * force.data[0]
+                + cx_i[1] * force.data[1]
+                + cx_i[2] * force.data[2]
+                + (-center_of_mass.data[2] * cx_i[1] + center_of_mass.data[1] * cx_i[2])
+                    * force.data[3]
+                    * 1.
+                    / self.mass
+                + (center_of_mass.data[2] * cx_i[0] - center_of_mass.data[0] * cx_i[2])
+                    * force.data[4]
+                + (-center_of_mass.data[1] * cx_i[0] + center_of_mass.data[0] * cx_i[1])
+                    * force.data[5],
+            cx_i[3] * force.data[0]
+                + cx_i[4] * force.data[1]
+                + cx_i[5] * force.data[2]
+                + (-center_of_mass.data[2] * cx_i[4] + center_of_mass.data[1] * cx_i[5])
+                    * force.data[3]
+                + (center_of_mass.data[2] * cx_i[3] - center_of_mass.data[0] * cx_i[5])
+                    * force.data[4]
+                    * 1.
+                    / self.mass
+                + (-center_of_mass.data[1] * cx_i[3] + center_of_mass.data[0] * cx_i[4])
+                    * force.data[5],
+            cx_i[6] * force.data[0]
+                + cx_i[7] * force.data[1]
+                + cx_i[8] * force.data[2]
+                + (-center_of_mass.data[2] * cx_i[7] + center_of_mass.data[1] * cx_i[8])
+                    * force.data[3]
+                + (center_of_mass.data[2] * cx_i[6] - center_of_mass.data[0] * cx_i[8])
+                    * force.data[4]
+                + (-center_of_mass.data[1] * cx_i[6] + center_of_mass.data[0] * cx_i[7])
+                    * force.data[5]
+                    * 1.
+                    / self.mass,
+        ])
     }
 }
